@@ -17,23 +17,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void Read_n(int* n_p);
-void Allocate_vectors(double** x_pp, double** y_pp, double** z_pp, int n);
+void Read_n(int *n_p);
+void Allocate_vectors(double **x_pp, double **y_pp, double **z_pp, int n);
 void Read_vector(double a[], int n, char vec_name[]);
 void Print_vector(double b[], int n, char title[]);
 void Vector_sum(double x[], double y[], double z[], int n);
 
 /*---------------------------------------------------------------------*/
-int main(void) {
+int main(void)
+{
    int n;
    double *x, *y, *z;
 
    Read_n(&n);
    Allocate_vectors(&x, &y, &z, n);
-   
+
    Read_vector(x, n, "x");
    Read_vector(y, n, "y");
-   
+
    Vector_sum(x, y, z, n);
 
    Print_vector(z, n, "The sum is");
@@ -43,7 +44,7 @@ int main(void) {
    free(z);
 
    return 0;
-}  /* main */
+} /* main */
 
 /*---------------------------------------------------------------------
  * Function:  Read_n
@@ -52,14 +53,16 @@ int main(void) {
  *
  * Errors:    If n <= 0, the program terminates
  */
-void Read_n(int* n_p /* out */) {
+void Read_n(int *n_p /* out */)
+{
    printf("What's the order of the vectors?\n");
    scanf("%d", n_p);
-   if (*n_p <= 0) {
+   if (*n_p <= 0)
+   {
       fprintf(stderr, "Order should be positive\n");
       exit(-1);
    }
-}  /* Read_n */
+} /* Read_n */
 
 /*---------------------------------------------------------------------
  * Function:  Allocate_vectors
@@ -70,18 +73,20 @@ void Read_n(int* n_p /* out */) {
  * Errors:    If one of the mallocs fails, the program terminates
  */
 void Allocate_vectors(
-      double**  x_pp  /* out */, 
-      double**  y_pp  /* out */, 
-      double**  z_pp  /* out */, 
-      int       n     /* in  */) {
-   *x_pp = malloc(n*sizeof(double));
-   *y_pp = malloc(n*sizeof(double));
-   *z_pp = malloc(n*sizeof(double));
-   if (*x_pp == NULL || *y_pp == NULL || *z_pp == NULL) {
+    double **x_pp /* out */,
+    double **y_pp /* out */,
+    double **z_pp /* out */,
+    int n /* in  */)
+{
+   *x_pp = malloc(n * sizeof(double));
+   *y_pp = malloc(n * sizeof(double));
+   *z_pp = malloc(n * sizeof(double));
+   if (*x_pp == NULL || *y_pp == NULL || *z_pp == NULL)
+   {
       fprintf(stderr, "Can't allocate vectors\n");
       exit(-1);
    }
-}  /* Allocate_vectors */
+} /* Allocate_vectors */
 
 /*---------------------------------------------------------------------
  * Function:  Read_vector
@@ -91,14 +96,15 @@ void Allocate_vectors(
  * Out arg:   a:  the vector to be read in
  */
 void Read_vector(
-      double  a[]         /* out */, 
-      int     n           /* in  */, 
-      char    vec_name[]  /* in  */) {
+    double a[] /* out */,
+    int n /* in  */,
+    char vec_name[] /* in  */)
+{
    int i;
    printf("Enter the vector %s\n", vec_name);
    for (i = 0; i < n; i++)
       scanf("%lf", &a[i]);
-}  /* Read_vector */  
+} /* Read_vector */
 
 /*---------------------------------------------------------------------
  * Function:  Print_vector
@@ -108,15 +114,16 @@ void Read_vector(
  *            title:  title for print out
  */
 void Print_vector(
-      double  b[]     /* in */, 
-      int     n       /* in */, 
-      char    title[] /* in */) {
+    double b[] /* in */,
+    int n /* in */,
+    char title[] /* in */)
+{
    int i;
    printf("%s\n", title);
    for (i = 0; i < n; i++)
       printf("%f ", b[i]);
    printf("\n");
-}  /* Print_vector */
+} /* Print_vector */
 
 /*---------------------------------------------------------------------
  * Function:  Vector_sum
@@ -127,12 +134,13 @@ void Print_vector(
  * Out arg:   z:  the sum vector
  */
 void Vector_sum(
-      double  x[]  /* in  */, 
-      double  y[]  /* in  */, 
-      double  z[]  /* out */, 
-      int     n    /* in  */) {
+    double x[] /* in  */,
+    double y[] /* in  */,
+    double z[] /* out */,
+    int n /* in  */)
+{
    int i;
 
    for (i = 0; i < n; i++)
       z[i] = x[i] + y[i];
-}  /* Vector_sum */
+} /* Vector_sum */
