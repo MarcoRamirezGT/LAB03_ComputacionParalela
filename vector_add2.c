@@ -6,19 +6,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <mpi.h>
 
 void Read_n(int *n_p);
 void Allocate_vectors(double **x_pp, double **y_pp, double **z_pp, int n);
-void Generate_random_vector(double a[], int n, int seed, char vec_name[]);
+void Generate_random_vector(double a[], int n);
 void Print_vector(double b[], int n, char title[]);
 void Vector_sum(double x[], double y[], double z[], int n);
 
 /*---------------------------------------------------------------------*/
 int main(void)
 {
-    clock_t start_time, end_time;
+    srand(time(NULL));
+    double tstart, tend;
     double total_time;
-    start_time = clock(); // Iniciar medición del tiempo
 
     int n;
     double *x, *y, *z;
@@ -26,25 +27,22 @@ int main(void)
     Read_n(&n);
     Allocate_vectors(&x, &y, &z, n);
 
-    Generate_random_vector(x, n, time(NULL), "x");
-    Generate_random_vector(y, n, time(NULL), "y");
+    Generate_random_vector(x, n);
+    Generate_random_vector(y, n);
 
-    Print_vector(x, 10, "Primeros 10 elementos de x");
-    Print_vector(y, 10, "Primeros 10 elementos de y");
-    Print_vector(x + n - 10, 10, "Ultimos 10 elementos de x");
-    Print_vector(y + n - 10, 10, "Ultimos 10 elementos de y");
+    Print_vector(x, n, "Vector x is:");
+    Print_vector(y, n, "Vector y is:");
 
-    /*Print_vector(y + n - 10, 10, "Ultimos 10 elementos de y");*/
-
+    tstart = MPI_Wtime(); // Iniciar medición del tiempo
     Vector_sum(x, y, z, n);
+    tend = MPI_Wtime(); // Finalizar medición del tiempo
 
-    Print_vector(z, n, "The sum is");
+    Print_vector(z, n, "The sum is:");
 
     free(x);
     free(y);
     free(z);
-    end_time = clock(); // Finalizar medición del tiempo
-    total_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    total_time = tend - tstart;
     printf("Tiempo de ejecucion: %f segundos\n", total_time);
 
     return 0;
@@ -79,12 +77,9 @@ void Allocate_vectors(
 
 void Generate_random_vector(
     double a[] /* out */,
-    int n /* in  */,
-    int seed /* in  */,
-    char vec_name[] /* in  */)
+    int n /* in  */)
 {
     int i;
-    srand(seed);
     for (i = 0; i < n; i++)
         a[i] = (double)rand() / (double)RAND_MAX;
 } /* Generate_random_vector */
@@ -97,14 +92,14 @@ void Print_vector(
     printf("%s\n", title);
     int i;
     for (i = 0; i < 10 && i < n; i++) // Imprimir los primeros 10 elementos
-        printf("%f ", b[i]);
+        printf("%.3f ", b[i]);
 
     if (n > 20) // Si el arreglo tiene más de 20 elementos, imprimir puntos suspensivos
         printf("... ");
 
     for (i = n - 10; i < n; i++) // Imprimir los últimos 10 elementos
         if (i >= 10)
-            printf("%f ", b[i]);
+            printf("%.3f ", b[i]);
     printf("\n");
 } /* Print_vector */
 

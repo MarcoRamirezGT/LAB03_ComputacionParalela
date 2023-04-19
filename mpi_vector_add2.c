@@ -14,7 +14,7 @@ void Read_n(int *n_p, int *local_n_p, int my_rank, int comm_sz,
             MPI_Comm comm);
 void Allocate_vectors(double **local_x_pp, double **local_y_pp,
                       double **local_z_pp, int local_n, MPI_Comm comm);
-void Read_vector(double local_a[], int local_n, int n, char vec_name[],
+void Generate_random_vector(double local_a[], int local_n, int n,
                  int my_rank, MPI_Comm comm);
 void Print_vector(double local_b[], int local_n, int n, char title[],
                   int my_rank, MPI_Comm comm);
@@ -30,52 +30,30 @@ int main(void)
     MPI_Comm comm;
     double tstart, tend;
 
+    srand(time(NULL));
+
     MPI_Init(NULL, NULL);
     comm = MPI_COMM_WORLD;
     MPI_Comm_size(comm, &comm_sz);
     MPI_Comm_rank(comm, &my_rank);
 
-    // Read_n(&n, &local_n, my_rank, comm_sz, comm);
-    n = 100000;
-    local_n = n / comm_sz;
+    Read_n(&n, &local_n, my_rank, comm_sz, comm);
     srand(time(NULL));
-    tstart = MPI_Wtime();
     Allocate_vectors(&local_x, &local_y, &local_z, local_n, comm);
 
-    for (int i = 0; i < local_n; i++)
-    {
-        local_x[i] = (double)rand() / RAND_MAX;
-        local_y[i] = (double)rand() / RAND_MAX;
-    }
 
-    if (my_rank == 0)
-    {
-        printf("Primeros 10 elementos de local_x:\n");
-        for (int i = 0; i < 10; i++)
-        {
-            printf("%.2f ", local_x[i]);
-        }
-        printf("\nUltimos 10 elementos de local_x:\n");
-        for (int i = local_n - 10; i < local_n; i++)
-        {
-            printf("%.2f ", local_x[i]);
-        }
-        printf("\nPrimeros 10 elementos de local_y:\n");
-        for (int i = 0; i < 10; i++)
-        {
-            printf("%.2f ", local_y[i]);
-        }
-        printf("\nUltimos 10 elementos de local_y:\n");
-        for (int i = local_n - 10; i < local_n; i++)
-        {
-            printf("%.2f ", local_y[i]);
-        }
-    }
+    Generate_random_vector(local_x, local_n, n, my_rank, comm);
+    Generate_random_vector(local_y, local_n, n, my_rank, comm);
+    
+    
+    Print_vector(local_x, local_n, n, "Vector x is:", my_rank, comm);
+    Print_vector(local_y, local_n, n, "Vector y is:", my_rank, comm);
 
+    tstart = MPI_Wtime();
     Parallel_vector_sum(local_x, local_y, local_z, local_n);
     tend = MPI_Wtime();
 
-    // Print_vector(local_z, local_n, n, "The sum is", my_rank, comm);
+    Print_vector(local_z, local_n, n, "The sum is", my_rank, comm);
     if (my_rank == 0)
         printf("\nTook %f seconds to run\n", tend - tstart);
 
@@ -156,11 +134,10 @@ void Allocate_vectors(
                     comm);
 } /* Allocate_vectors */
 
-void Read_vector(
+void Generate_random_vector(
     double local_a[] /* out */,
     int local_n /* in  */,
     int n /* in  */,
-    char vec_name[] /* in  */,
     int my_rank /* in  */,
     MPI_Comm comm /* in  */)
 {
@@ -168,7 +145,7 @@ void Read_vector(
     double *a = NULL;
     int i;
     int local_ok = 1;
-    char *fname = "Read_vector";
+    char *fname = "Generate_random_vector";
 
     if (my_rank == 0)
     {
@@ -180,7 +157,7 @@ void Read_vector(
         // printf("Enter the vector %s\n", vec_name);
         // fill vec with indez
         for (i = 0; i < n; i++)
-            a[i] = i;
+            a[i] = (double)rand() / (double)RAND_MAX;
         MPI_Scatter(a, local_n, MPI_DOUBLE, local_a, local_n, MPI_DOUBLE, 0,
                     comm);
         free(a);
@@ -218,8 +195,15 @@ void Print_vector(
         MPI_Gather(local_b, local_n, MPI_DOUBLE, b, local_n, MPI_DOUBLE,
                    0, comm);
         printf("%s\n", title);
-        for (i = 0; i < n; i++)
-            printf("%f ", b[i]);
+        for (i = 0; i < 10 && i < n; i++)
+            printf("%.3f ", b[i]);
+        
+        if (n > 20)
+            printf("... ");
+
+        for (i = n - 10; i < n; i++)
+            if (i >= 10)
+                printf("%.3f ", b[i]);
         printf("\n");
         free(b);
     }
