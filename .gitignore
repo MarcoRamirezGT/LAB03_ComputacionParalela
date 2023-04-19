@@ -2,3 +2,4 @@ vector_add
 vector_add2
 mpi_vector_add
 mpi_vector_add2
+mpi_vector_add_dot_scalar
