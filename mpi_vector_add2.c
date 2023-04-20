@@ -45,11 +45,11 @@ int main(void)
     Generate_random_vector(local_x, local_n);
     Generate_random_vector(local_y, local_n);
     Parallel_vector_sum(local_x, local_y, local_z, local_n);
-    tend = MPI_Wtime();   // end time
-
     Print_vector(local_x, local_n, n, "Vector x is:", my_rank, comm);
     Print_vector(local_y, local_n, n, "Vector y is:", my_rank, comm);
     Print_vector(local_z, local_n, n, "The sum is", my_rank, comm);
+    tend = MPI_Wtime();   // end time
+
     if (my_rank == 0)
         printf("\nTook %f seconds to run\n", tend - tstart);
 
@@ -163,17 +163,17 @@ void Print_vector(
                         comm);
         MPI_Gather(local_b, local_n, MPI_DOUBLE, b, local_n, MPI_DOUBLE,
                    0, comm);
-        printf("%s\n", title);
-        for (i = 0; i < 10 && i < n; i++)
-            printf("%.3f ", b[i]);
+        // printf("%s\n", title);
+        // for (i = 0; i < 10 && i < n; i++)
+        //     printf("%.3f ", b[i]);
         
-        if (n > 20)
-            printf("... ");
+        // if (n > 20)
+        //     printf("... ");
 
-        for (i = n - 10; i < n; i++)
-            if (i >= 10)
-                printf("%.3f ", b[i]);
-        printf("\n");
+        // for (i = n - 10; i < n; i++)
+        //     if (i >= 10)
+        //         printf("%.3f ", b[i]);
+        // printf("\n");
         free(b);
     }
     else
