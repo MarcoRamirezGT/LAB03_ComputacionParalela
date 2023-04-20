@@ -1,5 +1,5 @@
 /*
- * Compile:  gcc vector_add2.c -o vector_add2
+ * Compile:  mpicc vector_add2.c -o vector_add2
  * Run:      ./vector_add2
  */
 
@@ -27,16 +27,15 @@ int main(void)
     Read_n(&n);
     Allocate_vectors(&x, &y, &z, n);
 
+    tstart = MPI_Wtime(); // Iniciar medición del tiempo
     Generate_random_vector(x, n);
     Generate_random_vector(y, n);
 
-    Print_vector(x, n, "Vector x is:");
-    Print_vector(y, n, "Vector y is:");
-
-    tstart = MPI_Wtime(); // Iniciar medición del tiempo
     Vector_sum(x, y, z, n);
     tend = MPI_Wtime(); // Finalizar medición del tiempo
 
+    Print_vector(x, n, "Vector x is:");
+    Print_vector(y, n, "Vector y is:");
     Print_vector(z, n, "The sum is:");
 
     free(x);

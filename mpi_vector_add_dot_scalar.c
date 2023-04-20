@@ -1,6 +1,6 @@
 /*
  * Compile:  mpicc mpi_vector_add_dot_scalar.c -o mpi_vector_add_dot_scalar
- * Run:      mpiexec -np N ./mpi_vector_add_dot_scalar
+ * Run:      mpiexec -n N ./mpi_vector_add_dot_scalar
  */
 
 #include <stdio.h>
@@ -16,8 +16,7 @@ void Allocate_vectors(double **local_x_pp, double **local_y_pp,
                       double **local_z_pp, double **local_w_pp,
                       double **local_a_pp, double **local_b_pp,
                       int local_n, MPI_Comm comm);
-void Generate_random_vector(double local_a[], int local_n, int n,
-                 int my_rank, MPI_Comm comm);
+void Generate_random_vector(double local_a[], int local_n);
 void Print_vector(double local_b[], int local_n, int n, char title[],
                   int my_rank, MPI_Comm comm);
 void Parallel_vector_sum(double local_x[], double local_y[],
@@ -44,24 +43,24 @@ int main(void)
     MPI_Comm_rank(comm, &my_rank);
 
     Read_n_scalar(&n, &local_n, &scalar, my_rank, comm_sz, comm);
-    srand(time(NULL));
+    srand(time(NULL)+my_rank);
     Allocate_vectors(&local_x, &local_y, &local_z, &local_w, &local_a, &local_b, local_n, comm);
 
 
-    Generate_random_vector(local_x, local_n, n, my_rank, comm);
-    Generate_random_vector(local_y, local_n, n, my_rank, comm);
-    
-    
-    Print_vector(local_x, local_n, n, "Vector x is:", my_rank, comm);
-    Print_vector(local_y, local_n, n, "Vector y is:", my_rank, comm);
-
     tstart = MPI_Wtime();
+    
+    Generate_random_vector(local_x, local_n);
+    Generate_random_vector(local_y, local_n);
+
     Parallel_vector_sum(local_x, local_y, local_z, local_n);
     Parallel_dot_product(local_x, local_y, local_w, local_n);
     Parallel_scalar_multiplication(local_x, scalar, local_a, local_n);
     Parallel_scalar_multiplication(local_y, scalar, local_b, local_n);
+
     tend = MPI_Wtime();
 
+    Print_vector(local_x, local_n, n, "Vector x is:", my_rank, comm);
+    Print_vector(local_y, local_n, n, "Vector y is:", my_rank, comm);
     Print_vector(local_z, local_n, n, "The sum is", my_rank, comm);
     Print_vector(local_w, local_n, n, "The dot product is", my_rank, comm);
     Print_vector(local_a, local_n, n, "The product of x by scalar is", my_rank, comm);
@@ -162,40 +161,13 @@ void Allocate_vectors(
 
 void Generate_random_vector(
     double local_a[] /* out */,
-    int local_n /* in  */,
-    int n /* in  */,
-    int my_rank /* in  */,
-    MPI_Comm comm /* in  */)
+    int local_n /* in  */)
 {
-
-    double *a = NULL;
     int i;
-    int local_ok = 1;
-    char *fname = "Generate_random_vector";
 
-    if (my_rank == 0)
-    {
-        a = malloc(n * sizeof(double));
-        if (a == NULL)
-            local_ok = 0;
-        Check_for_error(local_ok, fname, "Can't allocate temporary vector",
-                        comm);
-        // printf("Enter the vector %s\n", vec_name);
-        // fill vec with indez
-        for (i = 0; i < n; i++)
-            a[i] = (double)rand() / (double)RAND_MAX;
-        MPI_Scatter(a, local_n, MPI_DOUBLE, local_a, local_n, MPI_DOUBLE, 0,
-                    comm);
-        free(a);
-    }
-    else
-    {
-        Check_for_error(local_ok, fname, "Can't allocate temporary vector",
-                        comm);
-        MPI_Scatter(a, local_n, MPI_DOUBLE, local_a, local_n, MPI_DOUBLE, 0,
-                    comm);
-    }
-} /* Read_vector */
+    for (i = 0; i < local_n; i++)
+        local_a[i] = (double)rand() / (double)RAND_MAX;
+} /* Generate_random_vector */
 
 void Print_vector(
     double local_b[] /* in */,
